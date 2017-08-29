@@ -11,8 +11,6 @@ import java.util.Vector;
 
 public class DebtAmortSchedule {
 
-    //public DebtAmortSchedule(){ showit(); }
-
     public DebtAmortSchedule(String title){
         this.title = title;
         showit();
