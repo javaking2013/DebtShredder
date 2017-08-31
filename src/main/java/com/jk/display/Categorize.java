@@ -62,7 +62,7 @@ public class Categorize {
         submit = new JButton("Submit/New");
         p.add(submit);
 
-        cancel = new JButton("Cancel");
+        cancel = new JButton("Close");
         p.add(cancel);
 
         f.add(p);

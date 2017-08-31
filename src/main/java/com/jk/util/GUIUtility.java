@@ -1,6 +1,7 @@
 package com.jk.util;
 
 import com.jk.reports.DebtAmortSchedule;
+import com.jk.reports.DebtReport;
 import com.jk.reports.ViewSchedule;
 import com.jk.display.Something;
 import javax.swing.*;
@@ -32,6 +33,12 @@ public class GUIUtility {
         return newItem;
     }
 
+    public static JMenuItem getAmortMenuItem(String input){
+        JMenuItem newItem = new JMenuItem(input);
+        newItem.addActionListener(e -> new DebtAmortSchedule(input));
+        return newItem;
+    }
+
     private static void execute(String input){
         switch(input){
             case "Categorize": new Categorize();
@@ -41,12 +48,7 @@ public class GUIUtility {
             case "Refresh Transactions":
 
                 break;
-            case "Build Amortization Schedule":
-                if(false){
-                    JOptionPane.showMessageDialog(null, "Must have a debt selected");
-                }else{
-                    new DebtAmortSchedule("Ford Car"); //TODO change this to get the stuff
-                }
+            case "View Debt Report": new DebtReport();
                 break;
             default:
                 JOptionPane.showMessageDialog(null, "This does nothing yet;");

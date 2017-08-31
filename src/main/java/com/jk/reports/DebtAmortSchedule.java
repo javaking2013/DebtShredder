@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Vector;
 
 public class DebtAmortSchedule {
@@ -40,7 +42,8 @@ public class DebtAmortSchedule {
         }catch(Exception e){ e.printStackTrace(); DBUtil.closeit(conn, ps); } finally{ DBUtil.closeit(conn, ps, rs); }
 
         Vector<Vector> rowData = new Vector<>();
-
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+        LocalDate date = LocalDate.parse(lastPaid, formatter);
         Double balance = Double.parseDouble(total.replace(",",""));
         Double rate = Double.parseDouble(interest) / 100;
         Double payment = Double.parseDouble(monthly.replace(",",""));
@@ -48,22 +51,20 @@ public class DebtAmortSchedule {
 
         while(balance > 0){
             Vector<String> vec = new Vector<>();
-
-            DecimalFormat df2 = new DecimalFormat(".##");
+            date = date.plusMonths(1);
+            DecimalFormat df2 = new DecimalFormat("###,###.00");
 
             vec.addElement(Integer.toString(month));
             vec.addElement("$" + df2.format(balance));
-            vec.addElement(lastPaid);
+            vec.addElement(date.toString());
 
             Double interestPaid = (balance * rate / 365) * 30;
-            Double principal = payment - interestPaid;
+            Double principal = (payment - interestPaid) < balance ? payment - interestPaid : balance;
 
             vec.addElement("$" + df2.format(principal));
             vec.addElement("$" + df2.format(interestPaid));
-            vec.addElement("$" + df2.format(payment));
-
+            vec.addElement("$" + df2.format(principal + interestPaid));
             rowData.addElement(vec);
-
             balance = balance - principal;
             month++;
         }

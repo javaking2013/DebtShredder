@@ -132,9 +132,9 @@ public class DBUtil {
         Connection conn = connect();
 
         if(desc.equalsIgnoreCase("Paycheck")){
-            sql = "delete from schedule where due = ? and trim(substr(description,0,17)) = ? and income = ?";
+            sql = "delete from schedule where due = ? and trim(substr(description,0,16)) = ? and income = ?";
         }else {
-            sql = "DELETE FROM schedule WHERE due = ? AND trim(substr(description,0,17)) = ? AND amount = ?";
+            sql = "DELETE FROM schedule WHERE due = ? AND trim(substr(description,0,16)) = ? AND amount = ?";
         }
 
         PreparedStatement ps = null;
@@ -144,6 +144,8 @@ public class DBUtil {
             ps.setString(1, date);
             ps.setString(2, desc);
             ps.setString(3, amount);
+            System.out.println(sql);
+            System.out.println(date + ": " + desc + ": " + amount);
             ps.execute();
         }catch(Exception e){ e.printStackTrace(); closeit(conn, ps); } finally{ closeit(conn, ps); }
     }
@@ -166,6 +168,24 @@ public class DBUtil {
             ps.setString(6, freq);
             ps.execute();
         }catch(Exception e){ e.printStackTrace(); closeit(conn, ps); } finally{ closeit(conn, ps); }
+    }
+
+    public static ArrayList<String> getDebtTitles(){
+        ArrayList debts = new ArrayList();
+
+        Connection conn = connect();
+        String sql = "select * from debt";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try{
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while(rs.next()){
+                debts.add(rs.getString("name"));
+            }
+        }catch(Exception e){ e.printStackTrace(); closeit(conn, ps); } finally{ closeit(conn, ps, rs); }
+
+        return debts;
     }
 
     public static int uncategorizedItems(){

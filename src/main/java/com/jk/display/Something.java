@@ -3,6 +3,7 @@ package com.jk.display;
 import javax.swing.*;
 import javax.swing.UIManager.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import com.jk.util.GUIUtility;
 import com.jk.util.DBUtil;
@@ -220,8 +221,15 @@ public class Something {
         editMenu.add(GUIUtility.getMenuItem("Categorize"));
 
         JMenu reportsMenu = new JMenu("Reports");
+        reportsMenu.add(GUIUtility.getMenuItem("View Debt Report"));
         reportsMenu.add(GUIUtility.getMenuItem("View All Scheduled"));
-        reportsMenu.add(GUIUtility.getMenuItem("Build Amortization Schedule"));
+
+        JMenu amortMenu = new JMenu("Build Amortization Schedule");
+        reportsMenu.add(amortMenu);
+
+        ArrayList<String> debts = DBUtil.getDebtTitles();
+
+        for(String debt : debts){ amortMenu.add(GUIUtility.getAmortMenuItem(debt)); }
 
         JMenu helpMenu = new JMenu("Help");
         JMenu viewMenu = new JMenu("View");
