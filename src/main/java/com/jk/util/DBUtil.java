@@ -5,14 +5,13 @@ import java.sql.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import com.jk.util.Holder;
 
 public class DBUtil {
 
     public static Connection connect() {
         Connection conn;
         try {
-            String url = "jdbc:sqlite:D:/IdeaProjects/MoneySaver/database/patrick.db";
+            String url = "jdbc:sqlite:" + Holder.database;
             conn = DriverManager.getConnection(url);
             return conn;
         } catch (SQLException e) { e.printStackTrace(); }
@@ -38,7 +37,7 @@ public class DBUtil {
                 ps.setString(5, "");
             }else{
                 ps.setString(4, "");
-                ps.setDouble(5, price + price + price);
+                ps.setDouble(5, Math.abs(price - price - price));
             }
             ps.setDouble(6, balance);
             ps.setString(7, null);
@@ -51,7 +50,8 @@ public class DBUtil {
 
     public static String getLedgerBalance(){
         Connection conn = connect();
-        String sql = "select min(cast(balance as double)) as balance from register where date = (select max(date) from register)";
+        //String sql = "select min(cast(balance as double)) as balance from register where date = (select max(date) from register)";
+        String sql = "select balance from register where ROWID = (select max(ROWID) from register)";
         PreparedStatement ps = null;
         ResultSet rs = null;
         try{
@@ -59,14 +59,14 @@ public class DBUtil {
             rs = ps.executeQuery();
             return rs.getString("balance");
         }catch(Exception e){ e.printStackTrace(); closeit(conn, ps); } finally{ closeit(conn, ps, rs); }
-        return "ERROR";
+        return "0";
     }
 
     public static String getTransactions(String date){
         Connection conn = connect();
         String result, sql = "";
         String days = Holder.daysTransaction;
-        if(date.equalsIgnoreCase("")){
+        if(date.equalsIgnoreCase("")){ //TODO change this to remove variables
             sql = "select * from register where date >= strftime('%m', date('now','-" + days + " day')) ||'/' || " +
                     "strftime('%d', date('now','-" + days + " day')) || '/' ||strftime('%Y', date('now','-" + days + " day')) order by date desc";
             result = "Transactions for last " + days + " days:\n\n";
@@ -144,8 +144,6 @@ public class DBUtil {
             ps.setString(1, date);
             ps.setString(2, desc);
             ps.setString(3, amount);
-            System.out.println(sql);
-            System.out.println(date + ": " + desc + ": " + amount);
             ps.execute();
         }catch(Exception e){ e.printStackTrace(); closeit(conn, ps); } finally{ closeit(conn, ps); }
     }
@@ -257,7 +255,7 @@ public class DBUtil {
 
     public static DefaultListModel getCurrentSchedule(){
         Connection conn = connect();
-        DefaultListModel list = new DefaultListModel();
+        DefaultListModel<String> list = new DefaultListModel<>();
         String sql = "select * from schedule where due < ( " +
                 "  select min(due) from schedule where category = 'Paycheck')" +
                 "UNION select * from schedule where due = (select min(due) from schedule " +
@@ -291,8 +289,51 @@ public class DBUtil {
         return list;
     }
 
-    public static String getNextIncomeDate(){ //TODO get next income day from schedule
-        return "";
+    public static void createDatabase(){
+        Connection conn = connect();
+        try{
+            String sql = "CREATE TABLE debt (\n" +
+                    "\tname TEXT,\n" +
+                    "\ttotal TEXT,\n" +
+                    "\tinterest TEXT,\n" +
+                    "\tmonthly TEXT,\n" +
+                    "\tlastPaid TEXT)";
+
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.execute();
+
+            sql = "CREATE TABLE register (\n" +
+                    "\tDate TEXT,\n" +
+                    "\tDescription TEXT,\n" +
+                    "\tMemo TEXT,\n" +
+                    "\t\"Amount Debit\" TEXT,\n" +
+                    "\t\"Amount Credit\" TEXT,\n" +
+                    "\tBalance TEXT,\n" +
+                    "\t\"Check Number\" TEXT,\n" +
+                    "\t\"Fees  \" TEXT,\n" +
+                    "\tcategory VARCHAR(50))";
+
+            PreparedStatement ps2 = conn.prepareStatement(sql);
+            ps2.execute();
+
+            sql = "insert into register values ('','Initial Value','init','0.00','','0.00','','','Initial')";
+            ps2 = conn.prepareStatement(sql);
+            ps2.execute();
+
+            sql = "CREATE TABLE schedule (\n" +
+                    "\tdescription TEXT,\n" +
+                    "\tdue TEXT,\n" +
+                    "\tamount TEXT,\n" +
+                    "\tincome TEXT,\n" +
+                    "\tcategory TEXT,\n" +
+                    "\tfrequency TEXT)";
+            PreparedStatement ps3 = conn.prepareStatement(sql);
+            ps3.execute();
+
+            closeit(ps2);
+            closeit(ps3);
+            closeit(conn, ps);
+        }catch(Exception e){ e.printStackTrace(); closeit(conn); } finally{ closeit(conn); }
     }
 
     public static void closeit(ResultSet rs){ closeit(null, null, rs); }

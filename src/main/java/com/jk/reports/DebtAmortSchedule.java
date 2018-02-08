@@ -1,6 +1,7 @@
 package com.jk.reports;
 
 import com.jk.util.DBUtil;
+import com.jk.util.Holder;
 
 import javax.swing.*;
 import java.sql.Connection;
@@ -60,11 +61,20 @@ public class DebtAmortSchedule {
 
             Double interestPaid = (balance * rate / 365) * 30;
             Double principal = (payment - interestPaid) < balance ? payment - interestPaid : balance;
+            if("Mortgage".equalsIgnoreCase(this.title) && principal > Holder.escrow){
+                principal = principal - Holder.escrow;
+                System.out.println(principal);
+            }
 
             vec.addElement("$" + df2.format(principal));
             vec.addElement("$" + df2.format(interestPaid));
-            vec.addElement("$" + df2.format(principal + interestPaid));
+            if("Mortgage".equalsIgnoreCase(this.title)){
+                vec.addElement("$" + df2.format(principal + interestPaid + Holder.escrow));
+            }else {
+                vec.addElement("$" + df2.format(principal + interestPaid));
+            }
             rowData.addElement(vec);
+
             balance = balance - principal;
             month++;
         }

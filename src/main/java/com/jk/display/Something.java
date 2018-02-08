@@ -3,10 +3,16 @@ package com.jk.display;
 import javax.swing.*;
 import javax.swing.UIManager.*;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+
+import com.jk.reports.MonthlySumReport;
 import com.jk.util.GUIUtility;
 import com.jk.util.DBUtil;
+import com.jk.util.Holder;
 import com.jk.util.ValidUtility;
 
 public class Something {
@@ -26,6 +32,7 @@ public class Something {
     private JComboBox freqDDL, scheduleCatDDL;
     private JTextField balanceFieldAdd;
     public DefaultListModel listModel, debtListModel;
+    public static String[] months = {"January","Febuary","March","April","May","June","July","August","September","October","November","December"};
 
     public Something() {
         ledgerBalLabel.setText("Ledger Balance: $" + DBUtil.getLedgerBalance());
@@ -203,6 +210,8 @@ public class Something {
 
     public static void main(String[] args){
 
+        init();
+
         frame = new JFrame("Debt Shredder");
         GUIUtility.changeLNF("Nimbus");
 
@@ -218,11 +227,22 @@ public class Something {
 
         JMenu editMenu = new JMenu("Edit");
         editMenu.add(GUIUtility.getMenuItem("Refresh Transactions"));
+        editMenu.add(GUIUtility.getMenuItem("Modify Debts"));
         editMenu.add(GUIUtility.getMenuItem("Categorize"));
 
         JMenu reportsMenu = new JMenu("Reports");
+        reportsMenu.add(GUIUtility.getMenuItem("Bills Schedule"));
         reportsMenu.add(GUIUtility.getMenuItem("View Debt Report"));
         reportsMenu.add(GUIUtility.getMenuItem("View All Scheduled"));
+
+        JMenu monthlyReportMenu = new JMenu("Monthly Sum Expense Report");
+
+        for(String month : months){
+            JMenuItem item = new JMenuItem(month + " Sum Report");
+            item.addActionListener(e -> new MonthlySumReport(month));
+            monthlyReportMenu.add(item);
+        }
+        reportsMenu.add(monthlyReportMenu);
 
         JMenu amortMenu = new JMenu("Build Amortization Schedule");
         reportsMenu.add(amortMenu);
@@ -257,5 +277,40 @@ public class Something {
         frame.setResizable(false);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
+
+        //System.out.println(System.getProperty("os.name"));
+        //System.out.println(System.getProperty("sun.desktop"));
+        Properties stuff = System.getProperties();
+
+        System.out.println(System.getProperties());
+
+    }
+
+    private static void init(){
+        File location = new File(Holder.appLocation);
+        if(!location.exists()){
+            location.mkdir();
+        }
+
+        //TODO see if properties file exists, if not then create one and put db location in it
+
+        File props = new File(Holder.propertyFile);
+        if(!props.exists()){
+            try {
+                props.createNewFile();
+            }catch(Exception e){ e.printStackTrace(); }
+        }
+
+        //TODO
+
+        File file = new File(Holder.database);
+        if(!file.exists()){
+            System.out.println("Database doesn't exist, creating one...");
+            try {
+                if(file.createNewFile()){
+                    DBUtil.createDatabase();
+                }
+            } catch (Exception e) { e.printStackTrace(); }
+        }
     }
 }

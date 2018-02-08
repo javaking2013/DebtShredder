@@ -1,6 +1,7 @@
 package com.jk.reports;
 
 import com.jk.util.DBUtil;
+import com.jk.util.Holder;
 
 import javax.swing.*;
 import java.sql.Connection;
@@ -28,6 +29,7 @@ public class DebtReport {
         columnNames.addElement("Interest");
         columnNames.addElement("Maturity Date");
         columnNames.addElement("Months");
+        columnNames.addElement("DTI");
 
         Double totalMonthly = 0.00, totalTotal = 0.00;
 
@@ -66,15 +68,20 @@ public class DebtReport {
                 vec.addElement(name);
                 vec.addElement(monthly);
                 vec.addElement(total);
-                vec.addElement(interest);
+                vec.addElement(interest + "%");
                 vec.addElement(LocalDate.now().plusMonths(months).toString());
                 vec.addElement(Integer.toString(months));
+                vec.addElement(df2.format((payment / (Holder.salary / 12)) * 100));
                 rowData.addElement(vec);
             }
             Vector<String> vector = new Vector<>();
             vector.addElement("Totals:");
-            vector.addElement(df2.format(totalMonthly));
-            vector.addElement(df2.format(totalTotal));
+            vector.addElement("$" + df2.format(totalMonthly));
+            vector.addElement("$" + df2.format(totalTotal));
+            vector.addElement("");
+            vector.addElement("");
+            vector.addElement("");
+            vector.addElement(df2.format((totalMonthly / (Holder.salary / 12)) * 100 ));
             rowData.addElement(vector);
         }catch(Exception e){ e.printStackTrace(); DBUtil.closeit(conn, ps); } finally{ DBUtil.closeit(conn, ps, rs); }
 

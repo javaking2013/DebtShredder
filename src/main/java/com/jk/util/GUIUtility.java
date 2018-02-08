@@ -1,5 +1,7 @@
 package com.jk.util;
 
+import com.jk.display.UpdateDebt;
+import com.jk.reports.BillsReport;
 import com.jk.reports.DebtAmortSchedule;
 import com.jk.reports.DebtReport;
 import com.jk.reports.ViewSchedule;
@@ -49,6 +51,10 @@ public class GUIUtility {
 
                 break;
             case "View Debt Report": new DebtReport();
+                break;
+            case "Modify Debts": new UpdateDebt();
+                break;
+            case "Bills Schedule": new BillsReport();
                 break;
             default:
                 JOptionPane.showMessageDialog(null, "This does nothing yet;");
